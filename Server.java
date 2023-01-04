@@ -1,52 +1,84 @@
-package UDPDemo;
+package NPR;
 
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
-import java.io.*;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Server {
-    public static void main(String[] args) throws IOException{
-        int port = 6789;
-        DatagramSocket serverSocket = new DatagramSocket(port);
-        byte[] receiveData = new byte[1024];
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = null;
+        System.out.println("Server is waiting to accept user...");
+        int clientNumber = 0;
         try{
-            while(true){
-                DatagramPacket  receivePacket = new DatagramPacket (receiveData, receiveData.length);
-                ServiceThread thread = new ServiceThread (receivePacket, serverSocket);
-                thread.start();
+            serverSocket = new ServerSocket(1153);
+        } catch (IOException e){
+            System.out.println(e);
+            System.exit(1);
+        }
+        try {
+            while (true){
+                Socket connectionSocket = serverSocket.accept();
+                new ServiceThread (connectionSocket, clientNumber++).start();
             }
-        } finally {
+        } finally{
             serverSocket.close();
         }
     }
-    private static class ServiceThread extends Thread {
-        private DatagramSocket serverSocket;
-        private DatagramPacket receivePacket;
-        public ServiceThread (DatagramPacket receivePacket, DatagramSocket serverSocket){
-            this.receivePacket = receivePacket;
-            this.serverSocket = serverSocket;
+    private static void log(String message){
+        System.out.println(message);
+    }
+    private static class ServiceThread extends Thread{
+        private  int clientNumber;
+        private Socket connectionSocket;
+        public ServiceThread(Socket connectionSocket, int clientNumber){
+            this.clientNumber = clientNumber;
+            this.connectionSocket = connectionSocket;
+            log("New connection with client# "+ this.clientNumber + " at "+ connectionSocket);
         }
-
         @Override
-        public void run() {
+        public void run(){
             try{
-                serverSocket.receive(receivePacket);
-                String clientMessage = new String (receivePacket.getData());
-                int port = receivePacket.getPort();
-                InetAddress IPAdress = receivePacket.getAddress();
-                String capitalizedSentence = clientMessage.toUpperCase();
-                byte[] sendData = new byte[1024];
-                sendData = capitalizedSentence.getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAdress, port);
-                serverSocket.send( sendPacket);
-            } catch (IOException e){
+                DataInputStream input = new DataInputStream(connectionSocket.getInputStream());
+                DataOutputStream output = new DataOutputStream(connectionSocket.getOutputStream());
+                int clientStudentID = Integer.parseInt(input.readUTF());
+                output.writeUTF(factorial(clientStudentID).toString());
+
+                while(true){
+                    String clientInput = input.readUTF();
+                    if( isNumeric(clientInput) ) {
+                        if(Integer.parseInt( clientInput)>0 ){
+                            output.writeUTF(String.valueOf(Math.pow(clientStudentID, Integer.parseInt(clientInput))));
+                        }
+                        else output.writeUTF(clientInput);
+
+                    }
+                    else{
+                        output.writeUTF(clientInput);
+
+                    }
+
+
+                }
+            }catch (Exception e){
+                System.out.println(e);
                 e.printStackTrace();
             }
         }
+
+        public static BigInteger factorial(int N)
+        {
+            BigInteger f = new BigInteger("1");
+            for (int i = 2; i <= N; i++)
+                f = f.multiply(BigInteger.valueOf(i));
+            return f;
+        }
+        public static boolean isNumeric(String str) {
+            return str != null && str.matches("[-+]?\\d*\\.?\\d+");
+        }
+
+
     }
 }
