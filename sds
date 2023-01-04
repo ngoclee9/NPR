@@ -1,0 +1,26 @@
+Problem description: Client send message to mathematics server.
+
+Please write a program in Java that has 2 sides: server and client. Server uses port 1abbc where abc are 3 last number of your student ID.
+
+
+At server, let's do 5 following requirements (1 mark/requirement):
+Server listens to the connection from clients and accepts them. 
+For each client, server has to create a thread that will maintain the connection with that client (print out a message to screen each time server accepts a connection). 
+After accepting connection from client, server receives the first client’s message that is [Student_ID]. Server calculates the  factorial of Student_ID and sends the  factorial of Student_ID back to client.
+(You should use BigInteger).
+Server does the loop: 
+Server receives the client’s message: 
+   - If that message is a positive integer number, server calculates [Student_ID] raised to the power of that [number] and sends [Student_ID] raised to the power of that [number] back to client.
+   - If that message is not a positive integer number, server just sends the client's message back to client.
+(You should use BigInteger).
+GUI for server. 
+
+At client, let's do 5 following requirements (1 mark/requirement): 
+Client creates a connection to server.
+After connecting successfully to server, client sends to server the first message that is Student_ID, then reads the 1st reply from server (factorial of Student_ID) and prints it out to the screen (or client GUI).
+Client does the following loop:
+Client continues to read a message from user keyboard and sends that message to server.
+(also in the above loop)
+If the message read from keyboard is an integer number, client prepares to receive a message from server that is [Student_ID] raised to the power of that [number] and prints out to the client's screen (or client GUI).
+Otherwise, client just receives message from server and print it out to the screen (or client GUI).
+GUI for client.
